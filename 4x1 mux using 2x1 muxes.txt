@@ -1,0 +1,51 @@
+4x1 mux using 2x1 muxes:
+
+module mux_2_1(i0,i1,sel,y);
+  input i0,i1,sel;
+  output y;
+  assign y=((!sel &i0) | (sel & i1));
+endmodule
+
+module mux_4_1(i,sel,y);
+  input [3:0]i;
+  input [1:0]sel;
+  output y;
+  wire w1,w2;
+  mux_2_1 M0(i[0],i[1],sel[0],w1);
+  mux_2_1 M1(i[2],i[3],sel[0],w2);
+  mux_2_1 M2(w1,w2,sel[1],y);
+endmodule
+
+TEST BENCH:
+module mux_4_1_tb();
+  reg [3:0]i;
+  reg [1:0]sel;
+  wire y;
+  mux_4_1 DUT(.i(i),.sel(sel),.y(y));
+  initial
+    begin  
+      $monitor("i=%b,sel=%b,y=%b",i,sel,y);
+      i=4'b1010; sel=2'b00;
+      #10; i=4'b1110; sel=2'b01;
+      #10; i=4'b1010; sel=2'b10;
+      #10; i=4'b1010; sel=2'b11;
+      #10;
+      $finish;
+      end
+  initial
+    begin
+      $dumpfile("dump.vcd");
+      $dumpvars(1);
+    end
+endmodule
+
+OUTPUT:
+# KERNEL: i=1010,sel=00,y=0
+# KERNEL: i=1110,sel=01,y=1
+# KERNEL: i=1010,sel=10,y=0
+# KERNEL: i=1010,sel=11,y=1
+               
+
+
+                         
+               

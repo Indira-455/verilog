@@ -1,0 +1,10 @@
+Problem Statement:
+Build a circuit with no inputs and one output that outputs a constant 0
+
+Code:
+module top_module(
+    output zero);
+
+    assign zero = 0;
+
+endmodule

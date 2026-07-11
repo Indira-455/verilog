@@ -1,0 +1,44 @@
+2 to 4 decoder:
+
+module decoder_2_4(en,d,y);
+	input [1:0]d;
+	input en;
+	output [3:0]y;
+
+	assign y[0] = ~d[1] & ~d[0] & en;
+	assign y[1] = ~d[1] & d[0] & en;
+	assign y[2] = d[1] & ~d[0] & en;
+	assign y[3] = d[1] & d[0] & en;
+
+endmodule
+
+Test Bench:
+module decoder_2_4_tb;
+	reg [1:0]d;
+	reg en;
+	wire [3:0]y;
+	integer i;
+	decoder_2_4 DUT(.d(d),.en(en),.y(y));
+	initial 
+		begin
+			en = 1'b0;
+			d[1]=1'b0;
+			d[0]=1'b0;
+                end
+	initial
+		begin
+			$monitor("d=%b,y=%b,en=%b",d,y,en);
+			en = 0;
+			d = 2'b00;
+			#10 d = 2'b01;
+			#10 d = 2'b10;
+			#10 d = 2'b11;
+			#10;
+			en = 1;
+			d = 2'b00; #10;
+			d = 2'b01; #10;
+			d = 2'b10; #10;
+			d = 2'b11; #10;
+			#100 $finish;
+		end
+endmodule

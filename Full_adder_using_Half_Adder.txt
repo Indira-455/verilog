@@ -1,0 +1,74 @@
+Half Adder:
+module half_adder(input a,b,
+	          output sum,carry);			 
+   //Understand the Data-flow abstraction
+   assign sum   = a ^ b;
+   assign carry = a & b;
+
+endmodule
+	
+Full Adder:
+module full_adder(a,b,cin,sum,carry);
+
+//Step1 : Write down the directions for the ports
+
+	  input a,b,cin;
+	  output sum,carry;
+
+//Step2 : Declare the internal wires	   
+
+	  wire w1,w2,w3;
+
+//Step3 : Instantiate the Half-Adders using order-based port mapping
+
+          half_adder HA1(a,b,w1,w2);
+	  half_adder HA2(w1,cin,sum,w3);
+
+//Step4 : Instantiate the OR gate
+
+	  or O2(carry,w3,w2);
+
+endmodule
+
+Test Bench:
+module full_adder_tb();
+		
+   //Testbench global variables
+   
+   reg   a,b,cin;
+   wire  sum,carry;
+
+   //Variable for loop iteration
+ 
+   integer i;
+   full_adder DUT(a,b,cin,sum,carry);
+
+   //Step1 : Instantiate the full adder with order based port mapping
+
+   //Process to initialize the variables at 0ns
+   initial 
+      begin
+         a   = 1'b0;
+	 b   = 1'b0;
+	 cin = 1'b0;
+      end
+				
+   //Process to generate stimulus using for loop
+   initial
+      begin 
+	 for (i=0;i<8;i=i+1)
+	    begin
+	       {a,b,cin}=i;
+	       #10;
+	    end
+      end
+				
+   //Process to monitor the changes in the variables
+   initial 
+      $monitor("Input a=%b, b=%b, cin=%b, Output sum =%b, carry=%b",a,b,cin,sum,carry);
+									
+   //Process to terminate simulation after 100ns
+   initial #100 $finish;
+ 
+endmodule
+

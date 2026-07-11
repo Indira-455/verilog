@@ -21,7 +21,7 @@ module full_adder(a,b,cin,sum,carry);
 
 //Step3 : Instantiate the Half-Adders using order-based port mapping
 
-          half_adder HA1(a,b,w1,w2);
+      half_adder HA1(a,b,w1,w2);
 	  half_adder HA2(w1,cin,sum,w3);
 
 //Step4 : Instantiate the OR gate

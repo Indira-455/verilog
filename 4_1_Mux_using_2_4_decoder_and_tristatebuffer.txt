@@ -1,0 +1,52 @@
+2 to 4 Decoder:
+
+module dec_2_4(s,d);
+	input [1:0]s;
+	output [3:0]d;
+
+	assign d[0] = ~s[1] & ~s[0];
+	assign d[1] = ~s[1] & s[0];
+	assign d[2] =  s[1] & ~s[0];
+	assign d[3] = s[1] & s[0];
+
+endmodule
+
+4:1 Mux:
+module mux_dec_tri(i,s,y);
+	input [3:0]i;
+	input [1:0]s;
+	output y;
+	wire [3:0]d;
+
+	dec_2_4 D1(s,d);
+
+	bufif1 B1(y,i[0],d[0]);
+	bufif1 B2(y,i[1],d[1]);
+	bufif1 B3(y,i[2],d[2]);
+	bufif1 B4(y,i[3],d[3]);
+
+endmodule
+
+
+Test Bench:
+
+module mux_dec_tri_tb;
+	reg[3:0]i;
+	reg[1:0]s;
+	wire y;
+	mux_dec_tri DUT(i,s,y);
+	integer j;
+	initial 
+		begin
+			i=4'b1110;
+		 	$monitor("i=%b,s=%b,y=%b",i,s,y);
+
+			 for(j=0;j<4;j=j+1)
+				 begin
+		 			s=j;
+		 			#10;
+	 			end
+	 			#100 $finish;
+	    	end
+ endmodule
+

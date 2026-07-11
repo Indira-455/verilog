@@ -1,0 +1,40 @@
+Bidirectional Buffer:
+
+module bidirectional_buffer(a,b,ctrl);
+	inout a,b;
+	input ctrl;
+
+	bufif1 B1(b,a,ctrl);
+	bufif0 B2(a,b,ctrl);
+
+endmodule
+
+
+Test Bench:
+
+module bidirectional_buffer_tb;
+	reg ctrl;
+	wire a,b;
+	reg tempa, tempb;
+	integer i;
+
+	assign a = ctrl ? tempa : 1'bz;
+	assign b = ~ctrl ? tempb : 1'bz;
+
+bidirectional_buffer DUT(a,b,ctrl);
+	initial
+		begin
+			{ctrl,tempa,tempb} = 3'b0;
+			#10;
+		end
+	initial
+		begin
+			for(i=0;i<8;i=i+1)
+				begin
+					{ctrl,tempa,tempb}=i;
+					#10;
+				end
+		end
+	initial
+		$monitor("a=%b,b=%b,ctrl=%b,tempa=%b,tempb=%b",a,b,ctrl,tempa,tempb);
+endmodule

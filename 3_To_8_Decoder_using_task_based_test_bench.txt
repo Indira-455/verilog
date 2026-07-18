@@ -1,0 +1,78 @@
+3 To 8 Decoder:
+
+module decoder_3_8(in, en, out);
+	input [2:0]in;
+        input en;
+	output reg [7:0]out;
+
+	always@(*)
+		begin
+			if(en)
+				case(in)
+					3'b000: out = 8'b00000001;
+					3'b001: out = 8'b00000010;
+					3'b010: out = 8'b00000100;
+					3'b011: out = 8'b00001000;
+					3'b100: out = 8'b00010000;
+					3'b101: out = 8'b00100000;
+					3'b110: out = 8'b01000000;
+					3'b111: out = 8'b10000000;
+					default: out = 8'bx;
+				endcase
+			else
+				out = 8'd0;
+		end
+endmodule
+
+Test Bench:
+
+module decoder_3_8_tb;
+	reg [2:0]in;
+	reg en;
+	wire [7:0]out;
+	integer m;
+
+	decoder_3_8 DUT(in,en,out);
+	task initialize;
+		begin
+			{in,en} = 0;
+		end
+	endtask
+
+	task en_oe(input i);
+		begin
+			en = i;
+		end
+	endtask
+
+	task inputs(input [2:0]j);
+		begin
+			in = j;
+		end
+	endtask
+
+	task delay();
+		begin
+			#10;
+		end
+	endtask
+
+
+	initial
+	begin
+		initialize;
+			en_oe(1'b0);
+			delay;
+			en_oe(1'b1);
+			for(m = 0;m < 8;m = m + 1)
+			begin
+				inputs(in);
+				delay;
+			end
+		$finish;
+end
+
+			initial
+				$monitor("en = %b,in = %b, out = %b",en,in,out);
+			
+endmodule

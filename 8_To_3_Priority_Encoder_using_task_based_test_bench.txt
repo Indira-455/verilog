@@ -1,0 +1,68 @@
+8 To 3 Priority Encoder:
+
+module pri_enc_8_3(in, out);
+	input [7:0]in;
+	output reg [2:0]out;
+
+	always@(*)
+		begin
+			if(in[7])
+				out = 3'b111;
+			else if(in[6])
+				out = 3'b110;
+			else if(in[5])
+				out = 3'b101;
+			else if(in[4])
+				out = 3'b100;
+			else if(in[3])
+				out = 3'b011;
+			else if(in[2])
+				out = 3'b010;
+			else if(in[1])
+				out = 3'b001;
+			else
+				out = 3'b000;
+		end
+endmodule
+
+
+
+Test Bench:
+
+module pri_enc_8_3_tb;
+	reg [7:0]in;
+	wire [2:0]out;
+	integer m;
+
+	pri_enc_8_3 DUT(in, out);Prio
+
+	task initialize;
+		begin 
+		in = 0;
+		end
+	endtask
+
+	task inputs(input [7:0]j);
+		begin
+			in = j;
+		end
+	endtask
+	task delay();
+		begin
+			#10;
+		end
+	endtask
+	initial
+	begin
+		initialize;
+		for(m = 0;m<256;m = m + 1)
+		begin
+			inputs(in);
+			delay;
+		end
+	$finish;
+	end
+
+			initial
+				$monitor("in = %b, out = %b",in,out);
+endmodule

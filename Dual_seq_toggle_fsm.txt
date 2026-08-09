@@ -1,0 +1,126 @@
+Dual Sequence Toggle FSM Moore Overlapping (101,1010):
+
+module toggle_fsm_moore(clk,rst,din,dout);
+    input clk,rst,din;
+    output dout;
+    
+    parameter IDLE = 4'b0000,
+                S1 = 4'b0001,    //S1
+                S2 = 4'b0010,    //S10
+                S3 = 4'b0011,    //S101
+                S4 = 4'b0100,    //S1010
+                S5 = 4'b0101,    //S1011
+                S6 = 4'b0110,    //S101100
+                S7 = 4'b0111,    //S10110
+                S8 = 4'b1000,    //S101101
+                S9 = 4'b1001;    //S1011010
+                
+                
+ reg[3:0] state, next_state;
+        always@(posedge clk)
+            begin
+                if(rst)
+                        state <= IDLE;
+                        else
+                            state <= next_state;
+           end
+           
+       always@(state,din)
+            begin
+            next_state = IDLE;
+            case(state)
+                IDLE: if(din) next_state = S1;    
+                      else    next_state = IDLE;
+                      
+                S1: if(din) next_state = S1;
+                      else  next_state = S2;
+                      
+                S2: if(din) next_state = S3;         
+                      else  next_state = IDLE;
+                            
+                S3: if(din) next_state = S5;
+                      else  next_state = S4;
+                      
+                S4: if(din) next_state = S3;
+                      else  next_state = IDLE;
+                      
+                S5: if(din) next_state = S5;
+                      else  next_state = S7;
+                      
+                S6: if(din) next_state = S5;
+                      else  next_state = S6;
+                      
+               S7: if(din) next_state = S8;
+                      else next_state = S6;
+                      
+               S8: if(din) next_state = S1;
+                      else next_state = S9;
+                      
+               S9: if(din) next_state = S8;
+                      else next_state = S6;
+                      
+          endcase
+      end
+          
+          assign dout = ((state == S3) || (state == S5) || (state == S6) || (state == S7) || (state == S9));
+
+endmodule
+
+Test Bench:
+
+module toggle_fsm_moore_tb();
+        reg clk,rst,din;
+        wire dout;
+        
+        toggle_fsm_moore DUT(clk,rst,din,dout);
+        
+        always 
+            begin
+                #10 clk = 1'b0;
+                #10 clk = ~clk;
+            end
+         task  reset();
+            begin
+                @(negedge clk) 
+                rst = 1'b1;
+                @(negedge clk)
+                rst = 1'b0;
+           end
+       endtask
+        
+        task stimulus(input i);
+            begin
+                @(negedge clk)
+                    din = i;
+           end
+       endtask
+       
+       initial
+        begin
+            reset();
+            stimulus(1'b0);
+            stimulus(1'b1);
+            stimulus(1'b0);
+            stimulus(1'b1);
+            stimulus(1'b0);
+            stimulus(1'b0);
+            stimulus(1'b0);
+            stimulus(1'b0);
+            stimulus(1'b1);
+            stimulus(1'b0);
+            stimulus(1'b1);
+            stimulus(1'b1);
+            stimulus(1'b0);
+            stimulus(1'b1);
+            stimulus(1'b0);    
+            stimulus(1'b0); 
+            stimulus(1'b1);
+            stimulus(1'b1);
+            stimulus(1'b0);
+            stimulus(1'b1);
+            #1000;
+            $finish;
+       end
+            
+endmodule
+

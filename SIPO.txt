@@ -1,0 +1,68 @@
+4 - bit Serial In Parallel Out Shift Register:
+
+module sipo(clk,rst,d_in,d_out);
+    input clk,rst,d_in;
+    output d_out;
+    reg [3:0]temp;
+    
+    always@(posedge clk)
+    begin
+    if(rst)
+        temp<=4'b0000;
+        else
+            temp<={temp[2:0],d_in};
+      end
+      
+      assign d_out = temp[3];
+endmodule
+
+
+Test Bench:
+
+module sipo_tb;
+reg clk,rst,d_in;
+wire d_out;
+
+sipo DUT(clk,rst,d_in,d_out);
+
+always #5 clk = ~clk;
+
+task initialize;
+    begin
+    {clk,rst,d_in} = 0;
+    end
+    endtask
+    
+    task reset;
+    begin
+    @(negedge clk);
+    rst = 1'b1;
+    @(negedge clk);
+    rst = 1'b0;
+    end
+    endtask
+    
+    task inputs(input i);
+    begin
+    @(negedge clk);
+        d_in = i;
+        end
+        endtask
+        
+        initial
+        begin
+        initialize;
+        #10;
+        reset;
+        inputs(1'b1);
+        inputs(1'b0);
+        inputs(1'b1);
+        inputs(1'b1);
+        #100;
+        $finish;
+        end
+        initial
+        $monitor("clk = %b,rst = %b,d_in = %b, d_out = %b",clk,rst,d_in,d_out);
+endmodule
+
+

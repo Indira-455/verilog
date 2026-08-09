@@ -1,0 +1,125 @@
+(16 x 8) Synchronous FIFO:
+
+module syn_fifo(clk,rst,write_n,read_n,data_in,data_out,empty,full);
+    parameter DEPTH =16;
+	parameter DATA_WIDTH =8;
+	parameter PTR_SIZE =5;
+
+	input clk,rst,write_n,read_n;
+	input [DATA_WIDTH -1:0] data_in;
+	output reg [DATA_WIDTH - 1 :0] data_out;
+	output empty,full;
+	
+	reg [DATA_WIDTH -1 :0]mem[0:DEPTH-1];
+	reg [PTR_SIZE-1:0] wr_ptr;
+	reg [PTR_SIZE-1:0] rd_ptr;
+	integer i;
+	always@(posedge clk or negedge rst)
+	begin
+		//write logic
+
+		if(!rst)
+		begin
+			for(i =0;i<16; i = i+1)
+			 begin
+				mem[i]<=0;
+				wr_ptr<=0;
+			end
+		end
+			else if(write_n ==1 && read_n == 0 && full == 0)
+			begin
+				mem[wr_ptr[3:0]][DATA_WIDTH -1:0]<=data_in;
+				wr_ptr<= wr_ptr + 1'b1;
+			end
+		end
+		//read logic
+
+		always@(posedge clk or negedge rst)
+		begin
+			if(!rst)
+		begin
+			data_out<=0;
+			rd_ptr<=0;
+
+		end
+			else if(write_n ==0 && read_n == 1 && empty == 0)
+			begin
+				
+					data_out<= mem[rd_ptr[3:0]][DATA_WIDTH-1:0];
+					rd_ptr<= rd_ptr + 1'b1;
+			end
+		else
+			data_out<=8'bz;
+	end
+
+	assign full = ((wr_ptr[4]!=rd_ptr[4]) && (wr_ptr[3:0] == rd_ptr[3:0]));
+	assign empty = (wr_ptr == rd_ptr);
+endmodule
+
+Test Bench:
+
+module syn_fifo_tb;
+    
+    parameter DEPTH =16;
+	parameter DATA_WIDTH =8;
+	parameter PTR_SIZE =5;
+	
+	reg clk,rst,write_n,read_n;
+	reg [DATA_WIDTH -1:0] data_in;
+	wire [DATA_WIDTH - 1 :0] data_out;
+	wire empty,full;
+	integer i;
+
+	syn_fifo DUT(clk,rst,write_n,read_n,data_in,data_out,empty,full);
+	always #5 clk = ~clk;
+
+	task initialize;
+		begin
+			{clk,rst,write_n,read_n,data_in} =0;
+		end
+	endtask
+
+	task reset;
+		begin
+			@(negedge clk);
+			rst = 1'b0;
+			@(negedge clk);
+			rst = 1'b1;
+		end
+	endtask
+	
+	task enable(input we,re);
+	   begin
+	       @(negedge clk);
+	       write_n = we;   
+	       read_n = re;
+	       end
+	  endtask
+
+
+	task write_t(input [7:0]l);
+		begin
+			@(negedge clk);
+			data_in = l;
+		end
+	endtask
+
+
+	initial
+	begin
+		initialize;
+		reset;
+		enable(1'b1,1'b0);
+		for(i = 0;i<16;i = i+1)
+		  write_t(i);
+		  //#10;
+		  enable(1'b0,1'b1);
+		  #200;
+		  $finish;
+		  end
+		  initial
+		  $monitor("clk = %b,rst = %b, write_n = %b, read_n = %b, data_in = %b, data_out = %b, full = %b, empty = %b",
+		  clk,rst,write_n,read_n,data_in,data_out,full,empty);
+
+endmodule
+		

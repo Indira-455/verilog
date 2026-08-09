@@ -1,0 +1,89 @@
+Melay FSM Overlapping (101):
+
+RTL:
+
+module fsm_melay(clk,rst,seq_in,det_o);
+		input clk,rst,seq_in;
+		output det_o;
+		
+		parameter S0 = 2'b00,
+				  S1 = 2'b01,
+				  S2 = 2'b10;
+				  
+		reg[1:0] state,next_state;
+		
+		always@(posedge clk)
+			begin
+				if(rst)
+					state<=S0;
+				else
+					state<=next_state;
+			end
+					
+		always@(state, seq_in)
+				begin
+					next_state<= S0;
+					case(state)
+						S0: if(seq_in == 1)
+								next_state<=S1;
+							else
+								next_state<=S0;
+						S1: if(seq_in == 0)
+								next_state<=S2;
+							else
+								next_state<=S1;
+						S2: if(seq_in == 1)
+								next_state<=S1;
+							else
+								next_state<=S0;
+					endcase
+				end	
+		assign det_o = ((state == S2) && (seq_in == 1)) ? 1'b1 : 1'b0;
+endmodule
+
+
+Test Bench:
+module fsm_melay_tb;
+	reg clk,rst,seq_in;
+	wire det_o;
+	
+	fsm_melay DUT(clk,rst,seq_in,det_o);
+	
+	always 
+	   begin
+	   #10 clk = 1'b0;
+	   #10 clk = ~clk;
+	end
+	
+	task reset;
+		begin
+			@(negedge clk)
+				rst = 1'b1;
+			@(negedge clk)
+				rst = 1'b0;
+		end
+    endtask
+	
+	task inputs(input i);
+		begin
+			@(negedge clk)
+			seq_in = i;
+		end
+	endtask
+	
+	initial	
+		begin
+			reset;
+			inputs(1'b0);
+			inputs(1'b1);
+			inputs(1'b0);
+			inputs(1'b1);
+			inputs(1'b0);
+			inputs(1'b1);
+			inputs(1'b1);
+			#1000;
+		    $finish;
+		end
+endmodule	
+	
+				  
